@@ -1,7 +1,35 @@
-emsdk
-node_modules
-build
-build_wasm
+# Node.js modules
+node_modules/
+
+# Download directories
+downloads/
+occt_source/
+local/
+
+# Build directories
+build/
+build_wasm/
+
+# CMake-related files
+CMakeFiles/
+CMakeCache.txt
+Makefile
+cmake_install.cmake
+CMakeLists.txt.user
+CMakeLists.txt.timestamp
+CTestTestfile.cmake
+
+# Package lock files (optional, if using npm)
 package-lock.json
-__pycache__
-.idea
+
+# Python bytecode files
+__pycache__/
+
+# IDE configuration files (e.g., JetBrains IntelliJ IDEA)
+.idea/
+
+# Miscellaneous
+*.log
+*.tmp
+*.swp
+.DS_Store

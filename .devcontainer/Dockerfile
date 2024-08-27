@@ -16,4 +16,4 @@ RUN if [ "${REINSTALL_CMAKE_VERSION_FROM_SOURCE}" != "none" ]; then \
 # [Optional] Uncomment this section to install additional packages.
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends install tcllib tklib tcl-dev tk-dev libfreetype-dev \
-    libx11-dev libgl1-mesa-dev libfreeimage-dev rapidjson-dev libdraco-dev g++ python2 docker
+    libx11-dev libgl1-mesa-dev libfreeimage-dev rapidjson-dev libdraco-dev g++ python2 nodejs

@@ -84,11 +84,6 @@ private:
                     uvArr.set (uvCount * 2 + 1, v);
                     uvCount += 1;
                 });
-                face.EnumerateUV2s ([&](double u, double v) {
-                    uv2Arr.set (uv2Count * 2, u);
-                    uv2Arr.set (uv2Count * 2 + 1, v);
-                    uv2Count += 1;
-                });
                 emscripten::val brepFaceObj (emscripten::val::object ());
                 brepFaceObj.set ("first", triangleOffset);
                 brepFaceObj.set ("last", triangleCount - 1);
@@ -121,10 +116,6 @@ private:
             emscripten::val uvObj (emscripten::val::object ());
             uvObj.set ("array", uvArr);
             attributesObj.set ("uv", uvObj);
-
-            emscripten::val uv2Obj (emscripten::val::object ());
-            uv2Obj.set ("array", uv2Arr);
-            attributesObj.set ("uv2", uv2Obj);
 
             emscripten::val indexObj (emscripten::val::object ());
             indexObj.set ("array", indexArr);

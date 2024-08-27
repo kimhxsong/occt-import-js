@@ -57,7 +57,6 @@ private:
             emscripten::val indexArr (emscripten::val::array ());
             emscripten::val brepFaceArr (emscripten::val::array ());
             emscripten::val uvArr (emscripten::val::array ());
-            emscripten::val uv2Arr (emscripten::val::array ());
 
             mesh.EnumerateFaces ([&](const Face& face) {
                 int triangleOffset = triangleCount;

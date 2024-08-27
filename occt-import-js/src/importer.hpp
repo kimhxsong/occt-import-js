@@ -33,6 +33,9 @@ public:
     virtual void EnumerateVertices (const std::function<void (double, double, double)>& onVertex) const = 0;
     virtual void EnumerateNormals (const std::function<void (double, double, double)>& onNormal) const = 0;
     virtual void EnumerateTriangles (const std::function<void (int, int, int)>& onTriangle) const = 0;
+
+    // New methods for enumerating UV coordinates
+    virtual void EnumerateUVs (const std::function<void (double, double)>& onUV) const = 0;
 };
 
 class Mesh

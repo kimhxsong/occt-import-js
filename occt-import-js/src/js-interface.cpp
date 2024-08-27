@@ -12,8 +12,7 @@ public:
     HierarchyWriter (emscripten::val& meshesArr) :
         mMeshesArr (meshesArr),
         mMeshCount (0)
-    {
-    }
+    {}
 
     void WriteNode (const NodePtr& node, emscripten::val& nodeObj)
     {
@@ -50,11 +49,15 @@ private:
             int normalCount = 0;
             int triangleCount = 0;
             int brepFaceCount = 0;
+            int uvCount = 0;
+            int uv2Count = 0;
 
             emscripten::val positionArr (emscripten::val::array ());
             emscripten::val normalArr (emscripten::val::array ());
             emscripten::val indexArr (emscripten::val::array ());
             emscripten::val brepFaceArr (emscripten::val::array ());
+            emscripten::val uvArr (emscripten::val::array ());
+            emscripten::val uv2Arr (emscripten::val::array ());
 
             mesh.EnumerateFaces ([&](const Face& face) {
                 int triangleOffset = triangleCount;
@@ -76,6 +79,16 @@ private:
                     indexArr.set (triangleCount * 3 + 1, vertexOffset + v1);
                     indexArr.set (triangleCount * 3 + 2, vertexOffset + v2);
                     triangleCount += 1;
+                });
+                face.EnumerateUVs ([&](double u, double v) {
+                    uvArr.set (uvCount * 2, u);
+                    uvArr.set (uvCount * 2 + 1, v);
+                    uvCount += 1;
+                });
+                face.EnumerateUV2s ([&](double u, double v) {
+                    uv2Arr.set (uv2Count * 2, u);
+                    uv2Arr.set (uv2Count * 2 + 1, v);
+                    uv2Count += 1;
                 });
                 emscripten::val brepFaceObj (emscripten::val::object ());
                 brepFaceObj.set ("first", triangleOffset);
@@ -106,6 +119,14 @@ private:
                 attributesObj.set ("normal", normalObj);
             }
 
+            emscripten::val uvObj (emscripten::val::object ());
+            uvObj.set ("array", uvArr);
+            attributesObj.set ("uv", uvObj);
+
+            emscripten::val uv2Obj (emscripten::val::object ());
+            uv2Obj.set ("array", uv2Arr);
+            attributesObj.set ("uv2", uv2Obj);
+
             emscripten::val indexObj (emscripten::val::object ());
             indexObj.set ("array", indexArr);
 
@@ -133,131 +154,4 @@ private:
     emscripten::val& mMeshesArr;
     int mMeshCount;
 };
-
-static void EnumerateNodeMeshes (const NodePtr& node, const std::function<void (const Mesh&)>& onMesh)
-{
-    if (node->IsMeshNode ()) {
-        node->EnumerateMeshes (onMesh);
-    }
-    std::vector<NodePtr> children = node->GetChildren ();
-    for (const NodePtr& child : children) {
-        EnumerateNodeMeshes (child, onMesh);
-    }
-}
-
-static emscripten::val ImportFile (ImporterPtr importer, const emscripten::val& buffer, const ImportParams& params)
-{
-    emscripten::val resultObj (emscripten::val::object ());
-
-    const std::vector<uint8_t>& bufferArr = emscripten::vecFromJSArray<std::uint8_t> (buffer);
-    Importer::Result importResult = importer->LoadFile (bufferArr, params);
-    resultObj.set ("success", importResult == Importer::Result::Success);
-    if (importResult != Importer::Result::Success) {
-        return resultObj;
-    }
-
-    int meshIndex = 0;
-    emscripten::val rootNodeObj (emscripten::val::object ());
-    emscripten::val meshesArr (emscripten::val::array ());
-    NodePtr rootNode = importer->GetRootNode ();
-
-    HierarchyWriter hierarchyWriter (meshesArr);
-    hierarchyWriter.WriteNode (rootNode, rootNodeObj);
-
-    resultObj.set ("root", rootNodeObj);
-    resultObj.set ("meshes", meshesArr);
-    return resultObj;
-}
-
-static ImportParams GetImportParams (const emscripten::val& paramsVal)
-{
-    ImportParams params;
-    if (paramsVal.isUndefined () || paramsVal.isNull ()) {
-        return params;
-    }
-
-    if (paramsVal.hasOwnProperty ("linearUnit")) {
-        emscripten::val linearUnit = paramsVal["linearUnit"];
-        std::string linearUnitStr = linearUnit.as<std::string> ();
-        if (linearUnitStr == "millimeter") {
-            params.linearUnit = ImportParams::LinearUnit::Millimeter;
-        } else if (linearUnitStr == "centimeter") {
-            params.linearUnit = ImportParams::LinearUnit::Centimeter;
-        } else if (linearUnitStr == "meter") {
-            params.linearUnit = ImportParams::LinearUnit::Meter;
-        } else if (linearUnitStr == "inch") {
-            params.linearUnit = ImportParams::LinearUnit::Inch;
-        } else if (linearUnitStr == "foot") {
-            params.linearUnit = ImportParams::LinearUnit::Foot;
-        }
-    }
-
-    if (paramsVal.hasOwnProperty ("linearDeflectionType")) {
-        emscripten::val linearDeflectionType = paramsVal["linearDeflectionType"];
-        std::string linearDeflectionTypeStr = linearDeflectionType.as<std::string> ();
-        if (linearDeflectionTypeStr == "bounding_box_ratio") {
-            params.linearDeflectionType = ImportParams::LinearDeflectionType::BoundingBoxRatio;
-        } else if (linearDeflectionTypeStr == "absolute_value") {
-            params.linearDeflectionType = ImportParams::LinearDeflectionType::AbsoluteValue;
-        }
-    }
-
-    if (paramsVal.hasOwnProperty ("linearDeflection")) {
-        emscripten::val linearDeflection = paramsVal["linearDeflection"];
-        params.linearDeflection = linearDeflection.as<double> ();
-    }
-
-    if (paramsVal.hasOwnProperty ("angularDeflection")) {
-        emscripten::val angularDeflection = paramsVal["angularDeflection"];
-        params.angularDeflection = angularDeflection.as<double> ();
-    }
-
-    return params;
-}
-
-emscripten::val ReadStepFile (const emscripten::val& buffer, const emscripten::val& params)
-{
-    ImporterPtr importer = std::make_shared<ImporterStep> ();
-    ImportParams importParams = GetImportParams (params);
-    return ImportFile (importer, buffer, importParams);
-}
-
-emscripten::val ReadIgesFile (const emscripten::val& buffer, const emscripten::val& params)
-{
-    ImporterPtr importer = std::make_shared<ImporterIges> ();
-    ImportParams importParams = GetImportParams (params);
-    return ImportFile (importer, buffer, importParams);
-}
-
-emscripten::val ReadBrepFile (const emscripten::val& buffer, const emscripten::val& params)
-{
-    ImporterPtr importer = std::make_shared<ImporterBrep> ();
-    ImportParams importParams = GetImportParams (params);
-    return ImportFile (importer, buffer, importParams);
-}
-
-emscripten::val ReadFile (const std::string& format, const emscripten::val& buffer, const emscripten::val& params)
-{
-    if (format == "step") {
-        return ReadStepFile (buffer, params);
-    } else if (format == "iges") {
-        return ReadIgesFile (buffer, params);
-    } else if (format == "brep") {
-        return ReadBrepFile (buffer, params);
-    } else {
-        emscripten::val resultObj (emscripten::val::object ());
-        resultObj.set ("success", false);
-        return resultObj;
-    }
-}
-
-EMSCRIPTEN_BINDINGS (occtimportjs)
-{
-    emscripten::function<emscripten::val, const std::string&, const emscripten::val&, const emscripten::val&> ("ReadFile", &ReadFile);
-
-    emscripten::function<emscripten::val, const emscripten::val&, const emscripten::val&> ("ReadStepFile", &ReadStepFile);
-    emscripten::function<emscripten::val, const emscripten::val&, const emscripten::val&> ("ReadIgesFile", &ReadIgesFile);
-    emscripten::function<emscripten::val, const emscripten::val&, const emscripten::val&> ("ReadBrepFile", &ReadBrepFile);
-}
-
 #endif

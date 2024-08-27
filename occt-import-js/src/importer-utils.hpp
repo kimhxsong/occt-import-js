@@ -29,6 +29,9 @@ public:
     virtual void EnumerateNormals (const std::function<void (double, double, double)>& onNormal) const override;
     virtual void EnumerateTriangles (const std::function<void (int, int, int)>& onTriangle) const override;
 
+    // New methods for UV enumeration
+    virtual void EnumerateUVs (const std::function<void (double, double)>& onUV) const override;
+
 protected:
     bool HasTriangulation () const;
 
@@ -36,6 +39,6 @@ protected:
     Handle (Poly_Triangulation) triangulation;
     TopLoc_Location location;
 };
-
 UnitsMethods_LengthUnit LinearUnitToLengthUnit (ImportParams::LinearUnit linearUnit);
 bool TriangulateShape (TopoDS_Shape& shape, const ImportParams& params);
+

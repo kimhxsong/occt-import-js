@@ -28,8 +28,6 @@ public:
     virtual void EnumerateVertices (const std::function<void (double, double, double)>& onVertex) const override;
     virtual void EnumerateNormals (const std::function<void (double, double, double)>& onNormal) const override;
     virtual void EnumerateTriangles (const std::function<void (int, int, int)>& onTriangle) const override;
-
-    // New methods for UV enumeration
     virtual void EnumerateUVs (const std::function<void (double, double)>& onUV) const override;
 
 protected:

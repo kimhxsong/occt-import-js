@@ -42,13 +42,8 @@ public:
 
             face.EnumerateUVs ([&](double u, double v) {
                 std::cout << "    UVs: " << u << ", " << v << std::endl;
-                objFile << "uv " << u << ", " << v << std::endl;
+                objFile << "vt " << u << " " << v << std::endl;
             });
-
-            // Write UVs if present
-            for (const auto& uv : uvs) {
-                objFile << "vt " << uv.first << " " << uv.second << std::endl;
-            }
 
             face.EnumerateTriangles ([&](int v0, int v1, int v2) {
                 std::cout << "    Triangle: " << v0 << ", " << v1 << ", " << v2 << std::endl;

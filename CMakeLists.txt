@@ -92,6 +92,7 @@ AddOcctModule (ElCLib)
 AddOcctModule (ElSLib)
 AddOcctModule (Extrema)
 AddOcctModule (FEmTool)
+AddOcctModule (FlexLexer)
 AddOcctModule (Font)
 AddOcctModule (FSD)
 AddOcctModule (GC)
@@ -331,6 +332,10 @@ target_compile_options (OcctImportJS PUBLIC -DOCCT_NO_PLUGINS)
 target_include_directories (OcctImportJS PUBLIC	${OcctIncludeDirs})
 set_target_properties(OcctImportJS PROPERTIES OUTPUT_NAME occt-import-js)
 set_target_properties (OcctImportJS PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}")
+
+
+# set(FLEXHEADER_INCLUDE_DIR "path/to/flexheader/include")
+# set(FLEXHEADER_LIBRARIES "flexheader_lib")
 
 # OcctImportJSExample
 
